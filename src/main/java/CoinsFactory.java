@@ -1,5 +1,5 @@
 public class CoinsFactory {
-    public static Coin getCoinInstance(Coins coin) throws Exception {
+    public Coin getCoinInstance(Coins coin) throws Exception {
         switch (coin) {
             case ILS:
                 return new ILS();
