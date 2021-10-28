@@ -53,14 +53,14 @@ public class Main {
         System.out.println("Please choose an option:");
         System.out.println("1 - Converting USD to ILS.");
         System.out.println("2 - Converting ILS to UDS.");
-        String userInput = scanner.next();
+        String userInput = scanner.nextLine();
         ArrayList<String> validOptions = new ArrayList<>();
         validOptions.add("1");
         validOptions.add("2");
         boolean isValidUserInput = validateUserInput(userInput, validOptions);
         while (!isValidUserInput) {
             System.out.println("Invalid option, please type '1' or '2':");
-            userInput = scanner.next();
+            userInput = scanner.nextLine();
             isValidUserInput = validateUserInput(userInput, validOptions);
         }
         Coins userOption = getChosenOption(userInput);
@@ -87,13 +87,14 @@ public class Main {
     }
 
     static String prettyPrintResult(Coins userOption, double result) {
+        String formattedResult = String.format("%.2f", result);
         switch (userOption) {
             case ILS:
-                System.out.println("RESULT: " + result + " USD.");
-                return result + " USD.";
+                System.out.println("RESULT: " + formattedResult + " USD.");
+                return formattedResult + " USD.";
             case USD:
-                System.out.println("RESULT: " + result + " ILS.");
-                return result + " ILS.";
+                System.out.println("RESULT: " + formattedResult + " ILS.");
+                return formattedResult + " ILS.";
         }
         return null;
     }
@@ -101,14 +102,14 @@ public class Main {
     static boolean startOver() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Do you want to perform another calculation? Type 'Y'/'N':");
-        String answer = scanner.next();
+        String answer = scanner.nextLine();
         ArrayList<String> validOptions = new ArrayList<>();
         validOptions.add("Y");
         validOptions.add("N");
         boolean isValidUserInput = validateUserInput(answer, validOptions);
         while (!isValidUserInput) {
             System.out.println("Invalid input, please type 'Y'/'N':");
-            answer = scanner.next();
+            answer = scanner.nextLine();
             isValidUserInput = validateUserInput(answer, validOptions);
         }
         if (answer.equalsIgnoreCase("N"))
