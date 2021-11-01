@@ -1,5 +1,9 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,21 +13,30 @@ public class Main {
         Coins userOption = getUserOptionInterface();
 
         /* Requesting currency to calculate screen. */
-        ArrayList<String> resultsList = new ArrayList<>();
+        ArrayList<Result> resultsList = new ArrayList<>();
         try {
             /* Show result and ask user to start over screen. */
             double result = calcResultInterface(userOption);
-            saveResultToList(resultsList, userOption, result);
+            Result resultToSave = new Result(result, userOption);
+            saveResultToList(resultsList, resultToSave);
+            String formattedResult = prettyPrintResult(resultToSave);
+            System.out.println(formattedResult);
+            saveResultToFile(formattedResult, "results.txt");
             while (startOver()) {
                 userOption = getUserOptionInterface();
                 result = calcResultInterface(userOption);
-                saveResultToList(resultsList, userOption, result);
+                resultToSave = new Result(result, userOption);
+                saveResultToList(resultsList, resultToSave);
+                formattedResult = prettyPrintResult(resultToSave);
+                System.out.println(formattedResult);
+                saveResultToFile(formattedResult, "results.txt");
             }
             /* Until next time screen */
             System.out.println("Thank you for using our currency converter!");
             System.out.println("Your results list: ");
-            for (String savedResult: resultsList) {
-                System.out.println(savedResult);
+            for (Result savedResult: resultsList) {
+                formattedResult = prettyPrintResult(savedResult);
+                System.out.println(formattedResult);
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -35,7 +48,11 @@ public class Main {
             return false;
         if (input.length() > 1)
             return false;
-        return input.equalsIgnoreCase(possibleOptions.get(0)) || input.equalsIgnoreCase(possibleOptions.get(1));
+        for(String option: possibleOptions) {
+            if (input.equalsIgnoreCase(option))
+                return true;
+        }
+        return false;
     }
 
     static Coins getChosenOption(String input) {
@@ -44,6 +61,8 @@ public class Main {
                 return Coins.USD;
             case "2":
                 return Coins.ILS;
+            case "3":
+                return Coins.EUR;
             default: return null;
         }
     }
@@ -52,14 +71,16 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Please choose an option:");
         System.out.println("1 - Converting USD to ILS.");
-        System.out.println("2 - Converting ILS to UDS.");
+        System.out.println("2 - Converting ILS to USD.");
+        System.out.println("3 - Converting EUR to ILS.");
         String userInput = scanner.nextLine();
         ArrayList<String> validOptions = new ArrayList<>();
         validOptions.add("1");
         validOptions.add("2");
+        validOptions.add("3");
         boolean isValidUserInput = validateUserInput(userInput, validOptions);
         while (!isValidUserInput) {
-            System.out.println("Invalid option, please type '1' or '2':");
+            System.out.println("Invalid option, please type '1', '2' or '3':");
             userInput = scanner.nextLine();
             isValidUserInput = validateUserInput(userInput, validOptions);
         }
@@ -69,34 +90,60 @@ public class Main {
 
     static double calcResultInterface(Coins userOption) throws Exception {
         CoinsFactory coinsFactory = new CoinsFactory();
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Please enter the amount to convert:");
-        double amountToConvert = scanner.nextDouble();
+        Scanner scanner;
+        double amountToConvert = 0;
+        boolean isValid = false;
+        while (!isValid) {
+            try {
+                System.out.println("Please enter the amount to convert:");
+                scanner = new Scanner(System.in);
+                amountToConvert = scanner.nextDouble();
+                isValid = true;
+            } catch(InputMismatchException e) {
+                System.out.println("Invalid input, only digits are allowed!");
+            }
+        }
         Coin chosenCoin = coinsFactory.getCoinInstance(userOption);
         double result = chosenCoin.calculate(amountToConvert);
         return result;
     }
 
-    static void saveResultToList(ArrayList<String> list, Coins userOption, double result) {
+    static void saveResultToList(ArrayList<Result> list, Result resultToSave) {
         try {
-            list.add(prettyPrintResult(userOption, result));
+            list.add(resultToSave);
         } catch (Exception e) {
             System.out.println("Failed to save or display result.");
             e.printStackTrace();
         }
     }
 
-    static String prettyPrintResult(Coins userOption, double result) {
-        String formattedResult = String.format("%.2f", result);
-        switch (userOption) {
+    static String prettyPrintResult(Result result) {
+        String formattedResult = String.format("%.2f", result.getValue());
+        switch (result.getType()) {
             case ILS:
-                System.out.println("RESULT: " + formattedResult + " USD.");
                 return formattedResult + " USD.";
-            case USD:
-                System.out.println("RESULT: " + formattedResult + " ILS.");
+            case USD: case EUR:
                 return formattedResult + " ILS.";
         }
         return null;
+    }
+
+    static String getCurrentTimestamp() {
+        LocalDateTime currentTimestamp = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        return currentTimestamp.format(formatter);
+    }
+
+    static void saveResultToFile(String textToSave, String filePath) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true));
+            writer.write(getCurrentTimestamp() + ": " + textToSave + "\n");
+            writer.close();
+            System.out.println("Successfully written results into: " + filePath + ".");
+        } catch (IOException e) {
+            System.out.println("Could not write results to file.");
+            e.printStackTrace();
+        }
     }
 
     static boolean startOver() {

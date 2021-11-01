@@ -1,17 +1,16 @@
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class USD extends Coin {
-    private static final double VALUE = 3.52;
+public class EUR extends Coin {
+    private static final double VALUE = 3.65;
 
     @Override
     public double getValue() {
         try {
-            String url = "https://freecurrencyapi.net/api/v2/latest?apikey=aa5cc890-3a34-11ec-be94-49cabbdc742b";
+            String url = "https://freecurrencyapi.net/api/v2/latest?base_currency=EUR&apikey=aa5cc890-3a34-11ec-be94-49cabbdc742b";
             URL urlForGetRequest = new URL(url);
             String readLine = null;
             HttpURLConnection conection = (HttpURLConnection) urlForGetRequest.openConnection();
@@ -44,3 +43,4 @@ public class USD extends Coin {
         return num * this.getValue();
     }
 }
+

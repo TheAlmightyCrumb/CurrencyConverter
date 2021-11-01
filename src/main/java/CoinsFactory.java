@@ -5,6 +5,8 @@ public class CoinsFactory {
                 return new ILS();
             case USD:
                 return new USD();
+            case EUR:
+                return new EUR();
         }
         throw new Exception("Oops, seems like something went wrong!");
     }
